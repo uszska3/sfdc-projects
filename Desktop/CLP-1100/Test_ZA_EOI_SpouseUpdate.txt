@@ -1,0 +1,93 @@
+@isTest
+private class Test_ZA_EOI_SpouseUpdate {
+    private static Account a;
+    private static Contact employeeContact;
+    private static Contact spouseContact;
+    private static Contact dependentContact;
+    private static ZA_EOI__c eoi;
+    private static ZA_EOI__c eoiSpouse;
+    private static ZA_EOI_Applicant__c eoiApp;
+    private static ZA_EOI_Applicant__c spouseEoiApp;
+    private static ZA_EOI_Applicant__c dependentEoiApp;
+    private static ZA_EOI_Applicant__c eoiAppSP;
+    private static ZA_EOI_Applicant__c dependentEoiAppsp;
+    private static User employeeUser;
+   
+
+
+    static {
+        Datetime yesterday = Datetime.now().addDays(-1);
+
+        a = ZA_TestData.createAccount();
+        insert a;
+        
+      
+       
+        
+        employeeContact = ZA_TestData.createContact(a.Id, 'Employee');
+        employeeContact.cve__Earnings__c = 100000;
+        employeeContact.cve__EarningsPeriod__c = 'Year';
+       // employeeContact.Reports_To_Group__c = parentGroup.Id; //Anurag added
+        spouseContact = ZA_TestData.createContact(a.Id, 'Spouse');
+        dependentContact = ZA_TestData.createContact(a.Id, 'Dependent');
+        insert new List<Contact>{employeeContact, spouseContact, dependentContact};
+        
+      
+
+        employeeUser = ZA_TestData.createCommunityEmployee(employeeContact.Id);
+        ZA_TestData.insertCommunityUser(employeeUser);
+
+        eoiSpouse = ZA_TestData.createEoi(spouseContact.Id);
+        eoiSpouse.Status__c = 'Not Started'; //'Pending';
+        eoiSpouse.Invitation_Sent__c = true; // to bypass flow trigger errors
+        //insert eoiSpouse;
+        eoi = ZA_TestData.createEoi(employeeContact.Id);
+        eoi.Status__c = 'Not Started'; //'Pending';
+        eoi.Invitation_Sent__c = true; // to bypass flow trigger errors
+        
+        //insert eoi;
+        insert new List<ZA_EOI__c>{eoiSpouse, eoi};
+
+        Test.setCreatedDate(eoi.Id, yesterday);
+
+        eoiApp = ZA_TestData.createEoiApplicant(eoi.Id, employeeContact.Id, true);
+        spouseEoiApp = ZA_TestData.createEoiApplicant(eoi.Id, spouseContact.Id, false);
+        dependentEoiApp = ZA_TestData.createEoiApplicant(eoi.Id, dependentContact.Id, false);
+        eoiApp.Basic_Life_Current_Amt__c = 100;
+        eoiApp.Basic_Life_Addtnl_Amt_Req__c = 100;
+        eoiApp.LTD_Addtnl_Percent_of_Salary__c = 10;
+        eoiApp.STD_Current_Percent_of_Salary__c = 10;
+        eoiApp.STD_Current_Percent_of_Salary__c = 10;
+        eoiApp.STD_Addtnl_Percent_of_Salary__c = 5;
+        eoiApp.Sup_Life_Current_Amt__c = 100;
+        eoiApp.Supp_Life_Addtnl_Am_Req__c = 100;
+        eoiApp.STD_Calc_Amt_if_Approved__c = 100;
+        eoiApp.Has_Dependent_Life_Coverage__c = true;
+        eoiApp.Has_Disability_Coverage__c = true;
+        eoiApp.Has_Life_Coverage__c = true;
+        eoiApp.Decision_Comments__c = 'testing';
+        eoiApp.LTD_Calc_Amt_if_Approved__c = 100;//Anurag added
+        eoiApp.Is_Primary_Applicant__c = True;
+        dependentEoiApp.Dep_Life_Child_Current_Amt__c = 100;
+        dependentEoiApp.Dep_Life_Child_Addtnl_Amt_Request__c = 100;
+        spouseEoiApp.Dep_Life_Spouse_Current_Amt__c = 100;
+        spouseEoiApp.Dep_Life_Spouse_Addtnl_Amt_Request__c = 100;
+        insert new List<ZA_EOI_Applicant__c>{eoiApp, spouseEoiApp, dependentEoiApp};
+
+     
+        Map<String, Org_Prefix__c> org_prefix_map = Test_ZA_CustomSettings_setup.get_Org_prefix();
+    }
+    
+    @isTest
+    Public static void testStatusReport() {
+    
+    employeeContact.Spouse_EOI__c= spouseContact.Id;
+    update employeeContact;
+    
+    EOI.Spouse_EOI__c = eoiSpouse.id;
+    update eoi;
+    
+    
+    }
+    
+}

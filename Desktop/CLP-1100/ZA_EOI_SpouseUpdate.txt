@@ -1,0 +1,18 @@
+public class ZA_EOI_SpouseUpdate{
+    public static void updateSpouse(Set<Id> spouseids,List<Contact> lstconts){
+        list<Contact> lstspousectcs=[select id,Spouse_EOI__c from Contact where id in:spouseids and recordtype.name='Spouse'];
+           
+        for (Contact c: lstspousectcs) 
+        { 
+            for (Contact c1: lstconts) 
+            {
+                if(c.id==c1.Spouse_EOI__c){
+                   
+                    c.Spouse_EOI__c=c1.id;
+                }
+               
+            }
+        }
+        update lstspousectcs;
+    }
+}
